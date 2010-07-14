@@ -4,8 +4,13 @@ runtime: python
 api_version: 1
 
 handlers:
-#- url: /slight
-#  static_dir: slight
+- url: /clientaccesspolicy.xml
+  static_files: clientaccesspolicy.xml
+  upload: clientaccesspolicy.xml
+
+- url: /crossdomain.xml
+  static_files: crossdomain.xml
+  upload: crossdomain.xml
 
 - url: /(.*\.xap)
   static_files: slight/\1

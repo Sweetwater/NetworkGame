@@ -1,0 +1,19 @@
+application: nico-nico
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+#- url: /slight
+#  static_dir: slight
+
+- url: /(.*\.xap)
+  static_files: slight/\1
+  upload: slight/(.*\.xap)
+
+- url: /(.*\.xaml)
+  static_files: slight/\1
+  upload: slight/(.*\.xaml)
+
+- url: /.*
+  script: main.py 

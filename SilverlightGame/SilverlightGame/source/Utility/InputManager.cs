@@ -27,6 +27,21 @@ namespace SilverlightGame.Utility
             get { return keys; }
         }
 
+        private bool nowMouseLPressd;
+        private bool oldMouseLPressd;
+        private bool mouseLDown;
+        private bool mouseLUp;
+        private bool mouseLTrigger;
+        private bool mouseLRelease;
+
+        private Point oldMousePosition;
+        private Point nowMousePosition;
+        private Point mouseMove;
+
+        private int mouseWheel;
+        private int nowMouseWheel;
+
+
         private FrameworkElement targetElement = null;
 
         public void Initialize(FrameworkElement target)
@@ -34,17 +49,27 @@ namespace SilverlightGame.Utility
             CreateKeys();
             Clear();
             targetElement = target;
-            targetElement.KeyDown += new KeyEventHandler(KeyDown);
-            targetElement.KeyUp += new KeyEventHandler(KeyUp);
-            targetElement.LostFocus += new RoutedEventHandler(LostFocus);
+            targetElement.KeyDown += KeyDown;
+            targetElement.KeyUp += KeyUp;
+            targetElement.MouseLeftButtonDown += MouseLeftDown;
+            targetElement.MouseLeftButtonUp += MouseLeftUp;
+            targetElement.MouseMove += MouseMove;
+            targetElement.MouseWheel += MouseWheel;
+            targetElement.MouseLeave += MouseLeave;
+            targetElement.LostFocus += LostFocus;
         }
 
         public void Destroy()
         {
             Clear();
-            targetElement.KeyDown -= new KeyEventHandler(KeyDown);
-            targetElement.KeyUp -= new KeyEventHandler(KeyUp);
-            targetElement.LostFocus -= new RoutedEventHandler(LostFocus);
+            targetElement.KeyDown -= KeyDown;
+            targetElement.KeyUp -= KeyUp;
+            targetElement.MouseLeftButtonDown -= MouseLeftDown;
+            targetElement.MouseLeftButtonUp -= MouseLeftUp;
+            targetElement.MouseMove -= MouseMove;
+            targetElement.MouseWheel -= MouseWheel;
+            targetElement.MouseLeave -= MouseLeave;
+            targetElement.LostFocus -= LostFocus;
             targetElement = null;
         }
 
@@ -69,6 +94,18 @@ namespace SilverlightGame.Utility
                 trigger[key] = false;
                 release[key] = false;
             }
+
+            nowMouseLPressd = false;
+            oldMouseLPressd = false;
+            mouseLDown = false;
+            mouseLUp = false;
+            mouseLTrigger = false;
+            mouseLRelease = false;
+
+            mouseMove.X = 0;
+            mouseMove.Y = 0;
+            mouseWheel = 0;
+            nowMouseWheel = 0;
         }
 
         public void Update(double dt)
@@ -83,6 +120,20 @@ namespace SilverlightGame.Utility
 
                 oldPressed[key] = nowPressed[key];
             }
+
+            mouseLDown = nowMouseLPressd;
+            mouseLUp = !nowMouseLPressd;
+            mouseLTrigger = nowMouseLPressd & (oldMouseLPressd == false);
+            mouseLRelease = oldMouseLPressd & (nowMouseLPressd == false);
+    
+            oldMouseLPressd = nowMouseLPressd;
+
+            mouseMove.X = nowMousePosition.X - oldMousePosition.X;
+            mouseMove.Y = nowMousePosition.Y - oldMousePosition.Y;
+            oldMousePosition = nowMousePosition;
+
+            mouseWheel = nowMouseWheel;
+            nowMouseWheel = 0;
         }
 
         public bool isDown(Key key) {
@@ -101,6 +152,36 @@ namespace SilverlightGame.Utility
             return release[key];
         }
 
+        public bool isMouseLDown()
+        {
+            return mouseLDown;
+        }
+        public bool isMouseLUp()
+        {
+            return mouseLUp;
+        }
+        public bool isMouseLTrigger()
+        {
+            return mouseLTrigger;
+        }
+        public bool isMouseLRelease()
+        {
+            return mouseLRelease;
+        }
+
+        public Point MousePosition()
+        {
+            return oldMousePosition;
+        }
+        public Point MouseMove()
+        {
+            return mouseMove;
+        }
+        public int MouseWheel()
+        {
+            return mouseWheel;
+        }
+
 
         private void KeyDown(object sender, KeyEventArgs e)
         {
@@ -110,6 +191,27 @@ namespace SilverlightGame.Utility
         {
             nowPressed[e.Key] = false;
         }
+        private void MouseLeftDown(object sender, MouseButtonEventArgs e)
+        {
+            nowMouseLPressd = true;
+        }
+        private void MouseLeftUp(object sender, MouseButtonEventArgs e)
+        {
+            nowMouseLPressd = false;
+        }
+        private void MouseMove(object sender, MouseEventArgs e)
+        {
+            nowMousePosition = e.GetPosition(null);
+        }
+        private void MouseLeave(object sender, MouseEventArgs e)
+        {
+            nowMouseLPressd = false;
+        }
+        private void MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            nowMouseWheel += e.Delta;
+        }
+
         private void LostFocus(object sender, RoutedEventArgs e)
         {
             Clear();

@@ -24,10 +24,33 @@ namespace SilverlightGame.Graphics
             get { return bitmapImage; }
         }
 
+        private Image image;
+        public Image Image {
+            get { return Image; }
+        }
+
+
+        public double X {
+            set { image.SetValue(Canvas.LeftProperty, value); }
+        }
+        public double Y
+        {
+            set { image.SetValue(Canvas.TopProperty, value); }
+        }
+        public Point Point {
+            set {
+                this.X = value.X;
+                this.Y = value.Y;
+            }
+        }
+
+
         public MyImage(string url, BitmapImage bitmapImage)
         {
             this.ulr = url;
             this.bitmapImage = bitmapImage;
+
+
         }
     }
 }

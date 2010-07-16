@@ -20,9 +20,14 @@ namespace SilverlightGame.Object
         private const int mapDataHeight = 60;
         private const int minLength = 2;
         private const int maxLength = 10;
+        private const double rightRate = 0.3;
+        private const int minLeft = 2;
+        private const int maxLeft = 6;
+        private const int minRight = 1;
+        private const int maxRight = 3;
 
-        private const int mapWidth = 640 * 2;
-        private const int mapHeight = 480 * 2;
+        private const int mapWidth = 640;
+        private const int mapHeight = 480;
 
         private const double areaWidth = mapWidth / (double)mapDataWidth;
         private const double areaHeight = mapHeight / (double)mapDataHeight;
@@ -32,6 +37,7 @@ namespace SilverlightGame.Object
         private int[][] mapData;
         private int areaNum;
 
+        private Canvas mapCanvas;
         private Polygon[] areaShapes;
 
         private GameXXX game;
@@ -47,17 +53,11 @@ namespace SilverlightGame.Object
             {
                 mapData[i] = new int[mapDataWidth+2];
             }
-
-            CreateMap();
         }
 
         public void CreateMap()
         {
             ClearMapData();
-
-            var seed = 5;
-            random = new Random(seed);
-            
 
             var debugText = "";
 
@@ -74,7 +74,7 @@ namespace SilverlightGame.Object
                 }
                 debugText += "\n";
             }
-            debugText += "\n seed : " + seed;
+        //    debugText += "\n seed : " + seed;
         //    MyLog.WriteTextBlock(debugText);
   
             this.areaNum = newAreaID;
@@ -84,11 +84,19 @@ namespace SilverlightGame.Object
 
         private void FillHorizontal(int x, int y, ref int newAreaID)
         {
-            var length = this.random.Next(maxLength) + minLength;
+            int length;
+            int searchX;
+            if (random.NextDouble() < rightRate) {
+                length = this.random.Next(maxRight) + minRight;
+                searchX = x - 1;
+            }
+            else {
+                length = this.random.Next(maxLeft) + minLeft;
+                searchX = x;
+            }
             length = Math.Min(length, (mapDataWidth + 1 - x));
 
-            var areaID = SearchArea(y, x, length);
-
+            var areaID = SearchArea(y, searchX, length);
             bool isNewArea = false;
             if (areaID == emptyArea)
             {
@@ -153,18 +161,59 @@ namespace SilverlightGame.Object
             var fillBrush = new SolidColorBrush(Color.FromArgb(255, 255, 255, 255));
 
             CreatAreaPoints();
+
+            this.mapCanvas = new Canvas();
+            this.mapCanvas.Width = this.game.SreenWidth;
+            this.mapCanvas.Height = this.game.SreenHeight;
+//            this.mapCanvas.SetValue(Canvas.LeftProperty, -(mapCanvas.Width / 2d));
+            //            this.mapCanvas.SetValue(Canvas.TopProperty, -(mapCanvas.Height / 2d));
+            this.game.RootContainer.Children.Add(this.mapCanvas);
+
+            var trans = new TranslateTransform();
+            trans.X = -(mapCanvas.Width / 2d);
+            trans.Y = -(mapCanvas.Height / 2d);
+
+            var transGroup = new TransformGroup();
+            transGroup.Children.Add(trans);
+            transGroup.Children.Add(this.game.Camera.TranslateTranform);
+            transGroup.Children.Add(this.game.Camera.ZoomTranform);
+            this.mapCanvas.RenderTransform = transGroup;
+
             this.areaShapes = new Polygon[areaNum];
 
             for (int i = 0; i < areaShapes.Length; i++)
             {
+                var doubleCollection = new DoubleCollection();
+                doubleCollection.Add(1.0);
+                doubleCollection.Add(5.0);
+
                 var area = new Polygon();
                 area.Stroke = strokeBrush;
+                area.StrokeLineJoin = PenLineJoin.Miter;
+                area.StrokeDashCap = PenLineCap.Flat;
+                area.StrokeDashArray = doubleCollection;
                 area.Fill = fillBrush;
                 area.Points = areaPoints[i];
-                area.SetValue(Canvas.LeftProperty, 0d);
-                area.SetValue(Canvas.TopProperty, 0d);
-                this.game.RootContainer.Children.Add(area);
+                this.mapCanvas.Children.Add(area);
             }
+
+            var centerBrush1 = new SolidColorBrush(Color.FromArgb(255,255,0,0));
+            var center1 = new Ellipse();
+            center1.Fill = centerBrush1;
+            center1.Width = 10;
+            center1.Height = 10;
+            center1.SetValue(Canvas.LeftProperty, game.CenterX);
+            center1.SetValue(Canvas.TopProperty, game.CenterY);
+            this.game.RootContainer.Children.Add(center1);
+
+            var centerBrush2 = new SolidColorBrush(Color.FromArgb(255, 0, 255, 0));
+            var center2 = new Ellipse();
+            center2.Fill = centerBrush2;
+            center2.Width = 10;
+            center2.Height = 10;
+            center2.SetValue(Canvas.LeftProperty, game.CenterX);
+            center2.SetValue(Canvas.TopProperty, game.CenterY);
+            this.mapCanvas.Children.Add(center2);
         }
 
 

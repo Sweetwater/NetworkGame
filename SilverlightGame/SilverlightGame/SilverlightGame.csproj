@@ -70,6 +70,7 @@
     <Compile Include="source\GameXXX.cs" />
     <Compile Include="source\Graphics\Graphic.cs" />
     <Compile Include="source\Graphics\MyImage.cs" />
+    <Compile Include="source\Object\Camera.cs" />
     <Compile Include="source\Object\Map.cs" />
     <Compile Include="source\Scene\BaseScene.cs" />
     <Compile Include="source\Scene\TitleScene.cs" />

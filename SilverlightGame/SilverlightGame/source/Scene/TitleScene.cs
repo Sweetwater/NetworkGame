@@ -33,7 +33,7 @@ namespace SilverlightGame.Scene
         public TitleScene(GameXXX game)
         {
             this.game = game;
-            this.graphic = game.graphic;
+            this.graphic = game.Graphic;
         }
 
         public void Initialize() {
@@ -49,8 +49,8 @@ namespace SilverlightGame.Scene
         }
 
         public void Destroy() {
-            game.networkManager.StopPolling();
-            game.networkManager.reciveData += ReciveData;
+            game.NetworkManager.StopPolling();
+            game.NetworkManager.reciveData += ReciveData;
         }
 
         public void ReciveData(JsonObject data) {
@@ -61,20 +61,20 @@ namespace SilverlightGame.Scene
         public void Update(double dt) {
             int oldX = x;
             int oldY = y;
-            if (game.inputManager.isDown(Key.Left))
+            if (game.InputManager.isDown(Key.Left))
             {
                 x -= 1;
             }
-            else if (game.inputManager.isDown(Key.Right))
+            else if (game.InputManager.isDown(Key.Right))
             {
                 x += 1;
             }
 
-            if (game.inputManager.isDown(Key.Up))
+            if (game.InputManager.isDown(Key.Up))
             {
                 y -= 1;
             }
-            else if (game.inputManager.isDown(Key.Down))
+            else if (game.InputManager.isDown(Key.Down))
             {
                 y += 1;
             }
@@ -84,7 +84,7 @@ namespace SilverlightGame.Scene
                 var data = "x=" + x +"&y=" + y;
                 x = oldX;
                 y = oldY;
-                game.networkManager.SetSendPostRequest(data);
+                game.NetworkManager.SetSendPostRequest(data);
             }
 
             if (reciveData != null) {
@@ -96,10 +96,16 @@ namespace SilverlightGame.Scene
             }
         }
 
+        private int a = 0;
         public void Draw(double dt)
         {
-            this.map.Draw(dt);
-           // graphic.DrawImage(image, x, y, z);
+            if (a == 0) {
+              ///  graphic.DrawImage(image, x, y, z); 
+            }
+            a++;
+
+           this.map.Draw(dt);
+           
         }
     }
 }

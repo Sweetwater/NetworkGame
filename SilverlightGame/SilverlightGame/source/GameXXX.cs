@@ -19,6 +19,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TestSilver.source.Utility;
 using SilverlightGame.source.Utility;
+using SilverlightGame.Object;
 
 namespace SilverlightGame
 {
@@ -30,13 +31,32 @@ namespace SilverlightGame
         public delegate void Draw(double dt);
         public event Draw draw;
 
-        public InputManager inputManager;
-        public NetworkManager networkManager;
+        public InputManager InputManager;
+        public NetworkManager NetworkManager;
 
-        public Graphic graphic;
+        public Camera Camera;
+
+        public Graphic Graphic;
 
         public MainPage MainPage { get; set; }
         public Canvas RootContainer { get; set; }
+
+        public double SreenWidth {
+            get { return RootContainer.Width; }
+        }
+        public double SreenHeight
+        {
+            get { return RootContainer.Height; }
+        }
+
+        public double CenterX
+        { 
+            get { return RootContainer.Width / 2d; }
+        }
+        public double CenterY
+        {
+            get { return RootContainer.Height / 2d; }
+        }
 
         private Random syncRandom;
         public Random SyncRandom {
@@ -44,7 +64,6 @@ namespace SilverlightGame
         }
 
         protected DateTime lastTick;
-
 
         public GameXXX()
         {
@@ -54,16 +73,20 @@ namespace SilverlightGame
         {
             SetInitialParam();
 
-            this.graphic = new Graphic(this);
-
             var seed = 123485606;
-            this.syncRandom = new Random(seed);
+            this.syncRandom = new Random();
 
-            this.inputManager = new InputManager();
-            this.inputManager.Initialize(this.MainPage);
-            this.update += this.inputManager.Update;
+            this.InputManager = new InputManager();
+            this.InputManager.Initialize(this.MainPage);
+            this.update += this.InputManager.Update;
 
-            this.networkManager = new NetworkManager();
+            this.Camera = new Camera(this);
+            this.Camera.Origin = new Point(CenterX, CenterY);
+            this.update += this.Camera.Update;
+
+            this.Graphic = new Graphic(this);
+
+            this.NetworkManager = new NetworkManager();
             
             var titileScene = new TitleScene(this);
             titileScene.Initialize();
@@ -87,10 +110,10 @@ namespace SilverlightGame
         {
             CompositionTarget.Rendering -= CompositionTarget_Rendering;
 
-            this.networkManager.StopPolling();
+            this.NetworkManager.StopPolling();
 
-            this.update -= this.inputManager.Update;
-            this.inputManager.Destroy();
+            this.update -= this.InputManager.Update;
+            this.InputManager.Destroy();
         }
 
         public void CompositionTarget_Rendering(object sender, EventArgs e)
@@ -106,10 +129,12 @@ namespace SilverlightGame
 
             double deltaTime = elapsed.TotalSeconds;
 
-            if (inputManager.isDown(Key.Escape))
+            if (InputManager.isDown(Key.Escape))
             {
                 Destroy();
             }
+
+//            MyLog.WriteTextBlock("Zoom :" + this.Camera.Zoom);
 
             if (update != null) update(deltaTime);
             if (draw != null) draw(deltaTime);

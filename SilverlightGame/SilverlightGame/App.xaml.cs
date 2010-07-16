@@ -34,6 +34,7 @@ namespace SilverlightGame
             var logTextBlock = new TextBlock();
             mainPage.RootCanvas.Children.Add(logTextBlock);
             MyLog.LogTextBlock = logTextBlock;
+            MyLog.LogTextBlock.SetValue(Canvas.ZIndexProperty, 100);
             MyLog.OutputLevel = 10;
             
             this.RootVisual = mainPage;

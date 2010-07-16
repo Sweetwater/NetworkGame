@@ -59,6 +59,16 @@ namespace SilverlightGame.Scene
 
 
         public void Update(double dt) {
+            this.map.Update(dt);
+
+            var clickArea = map.ClickArea;
+            if (clickArea != null)
+            {
+                var bursh = new SolidColorBrush(Color.FromArgb(255,255,0,0));
+                clickArea.Fill = bursh;
+                MyLog.WriteTextBlock(" click area :" + clickArea.Tag);
+            }
+
             int oldX = x;
             int oldY = y;
             if (game.InputManager.isDown(Key.Left))

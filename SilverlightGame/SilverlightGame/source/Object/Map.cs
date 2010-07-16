@@ -40,6 +40,18 @@ namespace SilverlightGame.Object
         private Canvas mapCanvas;
         private Polygon[] areaShapes;
 
+        private double clickRange = 10.0;
+        private Polygon clickArea;
+        private Polygon nowClickArea;
+        private Polygon buttonDownArea;
+        private Point buttonDownPoint;
+        public Polygon ClickArea {
+            get { return clickArea; }
+        }
+
+        public event MouseButtonEventHandler areaMouseButtonUp;
+        public event MouseButtonEventHandler areaMouseButtonDown;
+
         private GameXXX game;
         private Random random;
         
@@ -54,6 +66,13 @@ namespace SilverlightGame.Object
                 mapData[i] = new int[mapDataWidth+2];
             }
         }
+
+        public void Initialize()
+        {
+            this.clickArea = null;
+            this.nowClickArea = null;
+        }
+
 
         public void CreateMap()
         {
@@ -165,8 +184,6 @@ namespace SilverlightGame.Object
             this.mapCanvas = new Canvas();
             this.mapCanvas.Width = this.game.SreenWidth;
             this.mapCanvas.Height = this.game.SreenHeight;
-//            this.mapCanvas.SetValue(Canvas.LeftProperty, -(mapCanvas.Width / 2d));
-            //            this.mapCanvas.SetValue(Canvas.TopProperty, -(mapCanvas.Height / 2d));
             this.game.RootContainer.Children.Add(this.mapCanvas);
 
             var trans = new TranslateTransform();
@@ -194,26 +211,11 @@ namespace SilverlightGame.Object
                 area.StrokeDashArray = doubleCollection;
                 area.Fill = fillBrush;
                 area.Points = areaPoints[i];
+                area.Tag = i;
+                area.MouseLeftButtonDown += AreaMouseButtonDown;
+                area.MouseLeftButtonUp += AreaMouseButtonUp;
                 this.mapCanvas.Children.Add(area);
             }
-
-            var centerBrush1 = new SolidColorBrush(Color.FromArgb(255,255,0,0));
-            var center1 = new Ellipse();
-            center1.Fill = centerBrush1;
-            center1.Width = 10;
-            center1.Height = 10;
-            center1.SetValue(Canvas.LeftProperty, game.CenterX);
-            center1.SetValue(Canvas.TopProperty, game.CenterY);
-            this.game.RootContainer.Children.Add(center1);
-
-            var centerBrush2 = new SolidColorBrush(Color.FromArgb(255, 0, 255, 0));
-            var center2 = new Ellipse();
-            center2.Fill = centerBrush2;
-            center2.Width = 10;
-            center2.Height = 10;
-            center2.SetValue(Canvas.LeftProperty, game.CenterX);
-            center2.SetValue(Canvas.TopProperty, game.CenterY);
-            this.mapCanvas.Children.Add(center2);
         }
 
 
@@ -338,6 +340,46 @@ namespace SilverlightGame.Object
             return points;
         }
 
+        private void AreaMouseButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (areaMouseButtonUp != null) {
+                this.areaMouseButtonUp(sender, e);
+            }
+        }
+        private void AreaMouseButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (areaMouseButtonDown != null)
+            {
+                this.areaMouseButtonDown(sender, e);
+            }
+
+            var downArea = e.OriginalSource as Polygon;
+            if (downArea != null) {
+                this.buttonDownArea = downArea;
+                this.buttonDownPoint = e.GetPosition(null);
+            }
+        }
+
+        public void Update(double dt)
+        {
+            if (game.InputManager.isMouseLRelease())
+            {
+                if (this.buttonDownArea != null) {
+                    var mousePoint = game.InputManager.MousePosition();
+                    var diffX = Math.Abs(mousePoint.X - buttonDownPoint.X);
+                    var diffY = Math.Abs(mousePoint.Y - buttonDownPoint.Y);
+       
+                    if (diffX < clickRange && diffY < clickRange)
+                    {
+                        this.nowClickArea = this.buttonDownArea;
+                    }
+                }
+                this.buttonDownArea = null;
+            }
+
+            this.clickArea = this.nowClickArea;
+            this.nowClickArea = null;
+        }
 
         public void Draw(double dt)
         {

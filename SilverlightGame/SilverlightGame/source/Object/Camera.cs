@@ -96,12 +96,6 @@ namespace SilverlightGame.Object
         }
         private void ChangePosition(Point position)
         {
-            string debugWrite = "";
-            debugWrite += "origin X :" + origin.X + "\n";
-            debugWrite += "position X :" + origin.X + "\n";
-            debugWrite += "tranform X :" + (origin.X - position.X) + "\n";
-            MyLog.WriteTextBlock(debugWrite);
-
             this.translateTranform.X = (origin.X - position.X);
             this.translateTranform.Y = (origin.Y - position.Y);
             this.position = position;

@@ -38,6 +38,11 @@ namespace SilverlightGame
         public MainPage MainPage { get; set; }
         public Canvas RootContainer { get; set; }
 
+        private Random syncRandom;
+        public Random SyncRandom {
+            get { return syncRandom; }
+        }
+
         protected DateTime lastTick;
 
 
@@ -50,6 +55,9 @@ namespace SilverlightGame
             SetInitialParam();
 
             this.graphic = new Graphic(this);
+
+            var seed = 123485606;
+            this.syncRandom = new Random(seed);
 
             this.inputManager = new InputManager();
             this.inputManager.Initialize(this.MainPage);

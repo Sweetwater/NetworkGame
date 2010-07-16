@@ -12,6 +12,7 @@ using SilverlightGame.Utility;
 using SilverlightGame.Graphics;
 using System.Json;
 using SilverlightGame.source.Utility;
+using SilverlightGame.Object;
 
 namespace SilverlightGame.Scene
 {
@@ -20,6 +21,8 @@ namespace SilverlightGame.Scene
         private GameXXX game;
         private MyImage image;
         private Graphic graphic;
+
+        private Map map;
 
         private JsonObject reciveData;
 
@@ -34,10 +37,13 @@ namespace SilverlightGame.Scene
         }
 
         public void Initialize() {
-            image = ResouceManager.CreateImage("Media/brownplane1.png");
+            this.image = ResouceManager.CreateImage("Media/brownplane1.png");
 
-            game.networkManager.reciveData += ReciveData;
-            game.networkManager.StartPolling();
+            this.map = new Map(this.game);
+            this.map.CreateMap();
+
+            //game.networkManager.reciveData += ReciveData;
+            //game.networkManager.StartPolling();
 
             this.reciveData = null;
         }
@@ -84,7 +90,7 @@ namespace SilverlightGame.Scene
             if (reciveData != null) {
                 x = (int)this.reciveData["x"];
                 y = (int)this.reciveData["y"];
-                MyLog.WriteTextBlock("x: " + x + " y:" + y);
+//                MyLog.WriteTextBlock("x: " + x + " y:" + y);
 
                 this.reciveData = null;
             }
@@ -92,7 +98,8 @@ namespace SilverlightGame.Scene
 
         public void Draw(double dt)
         {
-            graphic.DrawImage(image, x, y, z);
+            this.map.Draw(dt);
+           // graphic.DrawImage(image, x, y, z);
         }
     }
 }

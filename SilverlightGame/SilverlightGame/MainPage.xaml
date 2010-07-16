@@ -5,7 +5,9 @@
     mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="480">
   <Grid x:Name="LayoutRoot">
         <Canvas x:Name="RootCanvas" Width="640" Height="480" Background="LemonChiffon">
-
+            <Canvas.Clip>
+                <RectangleGeometry Rect="0,0,640,480"/>
+            </Canvas.Clip>
         </Canvas>
     </Grid>
 </UserControl>

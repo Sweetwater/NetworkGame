@@ -26,8 +26,9 @@ namespace TestSilver.source.Utility
         private string postData;
         
         private WebClient webClient;
-        private Uri serviceUri = new Uri("/game_server", UriKind.Relative);
+//        private Uri serviceUri = new Uri("/game_server", UriKind.Relative);
 //        private Uri serviceUri = new Uri("http://localhost:8080/game_server", UriKind.Absolute);
+        private Uri serviceUri = new Uri("http://nico-nico.appspot.com/game_server", UriKind.Absolute);
 
         public NetworkManager()
         {
@@ -63,14 +64,14 @@ namespace TestSilver.source.Utility
 
         public void SetSendPostRequest(string data)
         {
-            MyLog.WriteLine(9,"        SetSendPostRequest :" + data);
+            MyLog.WriteLine(5,"        SetSendPostRequest :" + data);
             this.postData = data;
             this.isSendPost = true;
         }
 
         private void SendPost()
         {
-            MyLog.WriteLine(9,"        SendPost :" + this.postData);
+            MyLog.WriteLine(5,"        SendPost :" + this.postData);
             this.isSendPost = false;
             webClient.UploadStringAsync(serviceUri, "POST", this.postData);
         }
@@ -83,13 +84,22 @@ namespace TestSilver.source.Utility
 
         private void _DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
         {
-            MyLog.WriteLine(2, "        _DownloadStringCompleted");
-            if (e.Error == null)
+            if (e == null) {
+                MyLog.WriteLine(2, "!!!! _DownloadStringCompleted arg is null !!!!");
+            }
+            else if (e.Error != null)
             {
+                MyLog.WriteLineError("!!!! _DownloadStringCompleted error !!!!");
+                MyLog.WriteLineError("        " + e.Error.Message);
+            }
+            else
+            {
+                MyLog.WriteLine(2, "        _DownloadStringCompleted");
                 var result = e.Result;
                 JsonObject data = (JsonObject)JsonObject.Parse(result);
 
                 MyLog.WriteLine(2, "            result : " + result);
+                
                 foreach (string key in data.Keys)
                 {
                     MyLog.WriteLine(2, "            key : " + key + " data : " + data[key].ToString());
@@ -99,10 +109,6 @@ namespace TestSilver.source.Utility
                 {
                     reciveData(data);
                 }
-            }
-            else
-            {
-                MyLog.WriteLineError("!!!! _DownloadStringCompleted error !!!!");
             }
 
             if (this.isSendPost) {
@@ -115,26 +121,31 @@ namespace TestSilver.source.Utility
 
         private void _UploadStringCompleted(object sender, UploadStringCompletedEventArgs e)
         {
-            MyLog.WriteLine(2, "        _UploadStringCompleted");
-            if (e.Error == null)
+            if (e == null)
             {
+                MyLog.WriteLine(4, "!!!! _UploadStringCompleted arg is null !!!!");
+            }
+            else if (e.Error != null)
+            {
+                MyLog.WriteLineError("!!!! _UploadStringCompleted error !!!!");
+                MyLog.WriteLineError("        " + e.Error.Message);
+            }
+            else
+            {
+                MyLog.WriteLine(4, "        _UploadStringCompleted");
                 var result = e.Result;
                 JsonObject data = (JsonObject)JsonObject.Parse(result);
 
-                MyLog.WriteLine(2, "            result : " + result);
+                MyLog.WriteLine(4, "            result : " + result);
                 foreach (string key in data.Keys)
                 {
-                    MyLog.WriteLine(2, "            key : " + key + " data : " + data[key].ToString());
+                    MyLog.WriteLine(4, "            key : " + key + " data : " + data[key].ToString());
                 }
 
                 if (reciveData != null)
                 {
                     reciveData(data);
                 }
-            }
-            else
-            {
-                MyLog.WriteLineError("!!!! _UploadStringCompleted error !!!!");
             }
 
             if (this.isSendPost)

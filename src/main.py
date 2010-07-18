@@ -2,6 +2,7 @@
 
 import os
 import logging
+import random
 from google.appengine.api import channel, users
 from google.appengine.ext import webapp, db
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -20,6 +21,7 @@ class MatchData(db.Model):
     id = db.IntegerProperty();
     players = db.ListProperty(item_type=db.Key, default=[])
     playerNum = db.IntegerProperty(default=0)
+    mapSeed = db.IntegerProperty(default=0)
     createTime = db.DateTimeProperty(auto_now=True)
 
 #アプリデータ
@@ -66,7 +68,8 @@ class CommandPage(webapp.RequestHandler):
         self.response.out.write(message)
 
     def Entry(self, data):
-        appData = ApplicationData.get_or_insert('app_data')
+        mapSeed = random.randint(0,0x7FFFFFFF)
+        appData = ApplicationData.get_or_insert('app_data', mapSeed=mapSeed)
         matchId = appData.matchCount
 
         logging.log(25, 'match ID :'  + str(appData.matchCount))
@@ -85,7 +88,7 @@ class CommandPage(webapp.RequestHandler):
             logging.log(25, 'match ID :'  + str(appData.matchCount))
             matchId = appData.matchCount
             matchKeyName = 'match_' + str(matchId)
-            matchData = MatchData.get_or_insert(key_name=matchKeyName, id=matchId)
+            matchData = MatchData.get_or_insert(key_name=matchKeyName, id=matchId, mapSeed=mapSeed)
 
             logging.log(25, 'match key :'  + matchKeyName)
 
@@ -110,7 +113,7 @@ class CommandPage(webapp.RequestHandler):
         playerInfo['color'] = playerData.color
 
         matchInfo = dict()
-        matchInfo['mapSeed'] = 23455
+        matchInfo['mapSeed'] = matchData.mapSeed
 
         message = dict()
         message['command'] = 'entry'

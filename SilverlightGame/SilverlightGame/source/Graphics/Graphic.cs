@@ -21,7 +21,7 @@ namespace SilverlightGame.Graphics
             this.game = game;
 
             this.canvasImage = new Image();
-            game.RootContainer.Children.Add(canvasImage);
+            game.Root.Children.Add(canvasImage);
         }
 
         public void DrawImage(MyImage image, double x, double y, int z)

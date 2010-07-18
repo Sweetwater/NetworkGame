@@ -30,17 +30,15 @@ namespace SilverlightGame
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             var mainPage = new MainPage();
+            this.RootVisual = mainPage;
 
             var logTextBlock = new TextBlock();
-            mainPage.RootCanvas.Children.Add(logTextBlock);
+            mainPage.LayoutRoot.Children.Add(logTextBlock);
             MyLog.LogTextBlock = logTextBlock;
             MyLog.LogTextBlock.SetValue(Canvas.ZIndexProperty, 100);
             MyLog.OutputLevel = 10;
-            
-            this.RootVisual = mainPage;
-            this.gameXXX = new GameXXX();
-            this.gameXXX.MainPage = mainPage;
-            this.gameXXX.RootContainer = mainPage.RootCanvas;
+
+            this.gameXXX = new GameXXX(mainPage.LayoutRoot);            
             this.gameXXX.Initialize();
         }
 

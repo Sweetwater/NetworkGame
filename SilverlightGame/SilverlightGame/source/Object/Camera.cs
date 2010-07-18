@@ -14,12 +14,6 @@ namespace SilverlightGame.Object
 {
     public class Camera
     {
-        private double moveRate = 1.0;
-
-        private double maxZoom = 5.0;
-        private double minZoom = 0.8;
-        private double wheelRate = 0.002;
-
         private double zoom;
         public double Zoom
         {
@@ -50,12 +44,8 @@ namespace SilverlightGame.Object
             get { return translateTranform; }
         }
 
-        private GameXXX game;
-
-        public Camera(GameXXX game)
+        public Camera()
         {
-            this.game = game;
-
             this.zoomTranform = new ScaleTransform();
             this.zoomTranform.CenterX = 0;
             this.zoomTranform.CenterY = 0;
@@ -63,29 +53,6 @@ namespace SilverlightGame.Object
 
             this.translateTranform = new TranslateTransform();
             ChangePosition(new Point(0, 0));
-        }
-
-        public void Update(double dt)
-        {
-            if (game.InputManager.isMouseLDown())
-            {
-                var move = game.InputManager.MouseMove();
-                var pos = this.Position;
-                
-                pos.X -= move.X * moveRate;
-                pos.X = Math.Max(pos.X, -game.CenterX);
-                pos.X = Math.Min(pos.X, game.CenterX);
-
-                pos.Y -= move.Y * moveRate;
-                pos.Y = Math.Max(pos.Y, -game.CenterY);
-                pos.Y = Math.Min(pos.Y, game.CenterY);
-                ChangePosition(pos);
-            }
-
-            var zoom = this.Zoom + game.InputManager.MouseWheel() * wheelRate;
-            zoom = Math.Max(zoom, minZoom);
-            zoom = Math.Min(zoom, maxZoom);
-            ChangeZoom(zoom);
         }
 
         private void ChangeZoom(double zoom)

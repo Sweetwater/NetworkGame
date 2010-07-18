@@ -26,20 +26,33 @@ namespace TestSilver.source.Utility
         private string postData;
         
         private WebClient webClient;
-//        private Uri serviceUri = new Uri("/game_server", UriKind.Relative);
-//        private Uri serviceUri = new Uri("http://localhost:8080/game_server", UriKind.Absolute);
-        private Uri serviceUri = new Uri("http://nico-nico.appspot.com/game_server", UriKind.Absolute);
+        private Uri address;
 
         public NetworkManager()
         {
             this.webClient = new WebClient();
+        }
+
+        public void Initialize(Uri address) {
+            MyLog.WriteLine("--------NetworkManager Initialize :" + address);
+
+            this.address = address;
+
             this.webClient.DownloadStringCompleted += _DownloadStringCompleted;
             this.webClient.UploadStringCompleted += _UploadStringCompleted;
 
             this.isPolling = false;
             this.isSendPost = false;
+        }
 
-            MyLog.WriteLine("--------NetworkManager serviceUri :" + serviceUri);
+        public void Destroy()
+        {
+            StopPolling();
+
+            this.webClient.DownloadStringCompleted -= _DownloadStringCompleted;
+            this.webClient.UploadStringCompleted -= _UploadStringCompleted;
+
+            MyLog.WriteLine("--------NetworkManager Desotroy ");
         }
 
         public void StartPolling()
@@ -66,20 +79,28 @@ namespace TestSilver.source.Utility
         {
             MyLog.WriteLine(5,"        SetSendPostRequest :" + data);
             this.postData = data;
-            this.isSendPost = true;
+
+            if (this.webClient.IsBusy)
+            {
+                this.isSendPost = true;
+            }
+            else
+            {
+                SendPost();
+            }
         }
 
         private void SendPost()
         {
             MyLog.WriteLine(5,"        SendPost :" + this.postData);
             this.isSendPost = false;
-            webClient.UploadStringAsync(serviceUri, "POST", this.postData);
+            webClient.UploadStringAsync(address, "POST", this.postData);
         }
 
         private void SendGet()
         {
             MyLog.WriteLine(1,"        SendGet");
-            webClient.DownloadStringAsync(serviceUri);
+            webClient.DownloadStringAsync(address);
         }
 
         private void _DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)

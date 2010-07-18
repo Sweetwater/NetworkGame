@@ -1,4 +1,7 @@
-﻿using System;
+﻿#define LOCAL_ABS
+//#define SERVER_ABS
+
+using System;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
@@ -20,81 +23,109 @@ using System.Collections.Generic;
 using TestSilver.source.Utility;
 using SilverlightGame.source.Utility;
 using SilverlightGame.Object;
+using SilverlightGame.source.Object;
 
 namespace SilverlightGame
 {
     public class GameXXX
     {
+
+#if LOCAL_ABS && DEBUG
+        private Uri serviceUri = new Uri("http://localhost:8080/command", UriKind.Absolute);
+#elif GROBAL_ABS && DEBUG
+        private Uri serviceUri = new Uri("http://nico-nico.appspot.com/command", UriKind.Absolute);
+#else
+        private Uri serviceUri = new Uri("/command", UriKind.Relative);
+#endif
+
         public delegate void Update(double dt);
         public event Update update;
 
         public delegate void Draw(double dt);
         public event Draw draw;
 
-        public InputManager InputManager;
-        public NetworkManager NetworkManager;
+        public Canvas Root { get; private set; }
 
-        public Camera Camera;
+        public GameTime Time { get; private set; }
 
-        public Graphic Graphic;
+        public InputManager Input { get; private set; }
+        public NetworkManager Network { get; private set; }
+        
+        public Graphic Graphic { get; private set; }
+        public Random SyncRandom { get; private set; }
+        
+        public Camera Camera { get; private set; }
+        public CameraController CameraController { get; private set; }
 
-        public MainPage MainPage { get; set; }
-        public Canvas RootContainer { get; set; }
+        public Map Map { get; private set; }
+
 
         public double SreenWidth {
-            get { return RootContainer.Width; }
+            get { return Root.Width; }
         }
-        public double SreenHeight
-        {
-            get { return RootContainer.Height; }
-        }
-
-        public double CenterX
-        { 
-            get { return RootContainer.Width / 2d; }
-        }
-        public double CenterY
-        {
-            get { return RootContainer.Height / 2d; }
+        public double SreenHeight {
+            get { return Root.Height; }
         }
 
-        private Random syncRandom;
-        public Random SyncRandom {
-            get { return syncRandom; }
+        public double HalfWidth
+        {
+            get { return Root.Width / 2d; }
+        }
+        public double HalfHeight
+        {
+            get { return Root.Height / 2d; }
+        }
+
+        public double CenterX {
+            get { return Root.Width / 2d; }
+        }
+        public double CenterY {
+            get { return Root.Height / 2d; }
         }
 
         protected DateTime lastTick;
 
-        public GameXXX()
+        public GameXXX(Canvas root)
         {
+            this.Root = root;
+            this.Time = new GameTime();
+            this.Input = new InputManager();
+            this.Network = new NetworkManager();
+            this.Camera = new Camera();
+            this.Map = new Map(this);
         }
 
-        public void Initialize()
-        {
+        public void Initialize() {
+            MyLog.WriteLine("GameXXX Initialize");
             SetInitialParam();
 
-            var seed = 123485606;
-            this.syncRandom = new Random();
+            Time.Initialize();
+            Input.Initialize(this.Root);
+            Network.Initialize(this.serviceUri);
 
-            this.InputManager = new InputManager();
-            this.InputManager.Initialize(this.MainPage);
-            this.update += this.InputManager.Update;
+            this.CameraController = new CameraController(Camera, Input);
 
-            this.Camera = new Camera(this);
-            this.Camera.Origin = new Point(CenterX, CenterY);
-            this.update += this.Camera.Update;
+            this.update += Input.Update;
+            this.update += CameraController.Update;
 
-            this.Graphic = new Graphic(this);
-
-            this.NetworkManager = new NetworkManager();
-            
-            var titileScene = new TitleScene(this);
-            titileScene.Initialize();
-            this.update += titileScene.Update;
-            this.draw += titileScene.Draw;
-
-            lastTick = DateTime.Now;
             CompositionTarget.Rendering += CompositionTarget_Rendering;
+
+            Reset();
+        }
+
+        public void Destroy()
+        {
+            MyLog.WriteLine("GameXXX Destroy");
+            
+            CompositionTarget.Rendering -= CompositionTarget_Rendering;
+
+            this.update -= CameraController.Update;
+            this.update -= Input.Update;
+
+            this.Input.Destroy();
+            this.Network.Destroy();
+
+            MyLog.WriteLine("GameXXX Destroy End");
         }
 
         private void SetInitialParam()
@@ -106,14 +137,19 @@ namespace SilverlightGame
             }
         }
 
-        public void Destroy()
+
+        public void Reset()
         {
-            CompositionTarget.Rendering -= CompositionTarget_Rendering;
+            MyLog.WriteLine("GameXXX Reset");
 
-            this.NetworkManager.StopPolling();
+            Camera.Origin = new Point(HalfWidth, HalfHeight);
+            Camera.Position = new Point(0, 0);
+            CameraController.MinLimit = new Point(-HalfWidth, -HalfHeight);
+            CameraController.MaxLimit = new Point(HalfWidth, HalfHeight);
 
-            this.update -= this.InputManager.Update;
-            this.InputManager.Destroy();
+            var loadingScene = new LoadingScene(this);
+            loadingScene.Initialize();
+            this.update += loadingScene.Update;
         }
 
         public void CompositionTarget_Rendering(object sender, EventArgs e)
@@ -123,21 +159,16 @@ namespace SilverlightGame
 
         public void EnterFrame()
         {
-            DateTime now = DateTime.Now;
-            TimeSpan elapsed = now - lastTick;
-            lastTick = now;
-
-            double deltaTime = elapsed.TotalSeconds;
-
-            if (InputManager.isDown(Key.Escape))
+            if (Input.isDown(Key.Escape))
             {
+                MyLog.WriteLine("GameXXX ESC");
                 Destroy();
             }
 
-//            MyLog.WriteTextBlock("Zoom :" + this.Camera.Zoom);
+            Time.Update();
 
-            if (update != null) update(deltaTime);
-            if (draw != null) draw(deltaTime);
+            if (update != null) update(Time.Delta);
+            if (draw != null) draw(Time.Delta);
         }
     }
 }

@@ -19,11 +19,8 @@ namespace SilverlightGame.Scene
     public class TitleScene
     {
         private GameXXX game;
-        private MyImage image;
         private Graphic graphic;
-
-        private Map map;
-
+        private MyImage image;
         private JsonObject reciveData;
 
         private int x = 0;
@@ -35,7 +32,7 @@ namespace SilverlightGame.Scene
             this.game = game;
             this.graphic = game.Graphic;
         }
-
+#if false
         public void Initialize() {
             this.image = ResouceManager.CreateImage("Media/brownplane1.png");
 
@@ -117,5 +114,6 @@ namespace SilverlightGame.Scene
            this.map.Draw(dt);
            
         }
+#endif
     }
 }

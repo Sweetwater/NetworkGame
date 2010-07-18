@@ -67,16 +67,19 @@ namespace SilverlightGame.Object
             }
         }
 
-        public void Initialize()
+        public void Initialize(int seed)
         {
             this.clickArea = null;
             this.nowClickArea = null;
+            CreateMap(seed);
         }
 
 
-        public void CreateMap()
+        public void CreateMap(int seed)
         {
             ClearMapData();
+
+            this.random = new Random(seed);
 
             var debugText = "";
 
@@ -184,7 +187,7 @@ namespace SilverlightGame.Object
             this.mapCanvas = new Canvas();
             this.mapCanvas.Width = this.game.SreenWidth;
             this.mapCanvas.Height = this.game.SreenHeight;
-            this.game.RootContainer.Children.Add(this.mapCanvas);
+            this.game.Root.Children.Add(this.mapCanvas);
 
             var trans = new TranslateTransform();
             trans.X = -(mapCanvas.Width / 2d);
@@ -362,10 +365,10 @@ namespace SilverlightGame.Object
 
         public void Update(double dt)
         {
-            if (game.InputManager.isMouseLRelease())
+            if (game.Input.isMouseLRelease())
             {
                 if (this.buttonDownArea != null) {
-                    var mousePoint = game.InputManager.MousePosition();
+                    var mousePoint = game.Input.MousePosition();
                     var diffX = Math.Abs(mousePoint.X - buttonDownPoint.X);
                     var diffY = Math.Abs(mousePoint.Y - buttonDownPoint.Y);
        

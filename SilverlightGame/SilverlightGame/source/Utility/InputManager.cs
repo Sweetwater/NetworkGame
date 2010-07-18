@@ -41,7 +41,6 @@ namespace SilverlightGame.Utility
         private int mouseWheel;
         private int nowMouseWheel;
 
-
         private FrameworkElement targetElement = null;
 
         public void Initialize(FrameworkElement target)

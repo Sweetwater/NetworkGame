@@ -9,7 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using System.Collections.Generic;
-using SilverlightGame.source.Utility;
+using SilverlightGame.Utility;
 
 namespace SilverlightGame.Object
 {
@@ -39,6 +39,12 @@ namespace SilverlightGame.Object
 
         private Canvas mapCanvas;
         private Polygon[] areaShapes;
+
+        public bool Visible {
+            get { return (mapCanvas.Visibility == Visibility.Visible); }
+            set { mapCanvas.Visibility = (value ? Visibility.Visible : Visibility.Collapsed); }
+        }
+
 
         private double clickRange = 10.0;
         private Polygon clickArea;
@@ -77,6 +83,8 @@ namespace SilverlightGame.Object
 
         public void CreateMap(int seed)
         {
+            MyLog.WriteLine("CreateMap : " + seed);
+
             ClearMapData();
 
             this.random = new Random(seed);
@@ -100,6 +108,8 @@ namespace SilverlightGame.Object
         //    MyLog.WriteTextBlock(debugText);
   
             this.areaNum = newAreaID;
+
+            MyLog.WriteLine("    areaNum : " + this.areaNum);
 
             CreateShape();
         }
@@ -204,13 +214,14 @@ namespace SilverlightGame.Object
             for (int i = 0; i < areaShapes.Length; i++)
             {
                 var doubleCollection = new DoubleCollection();
-                doubleCollection.Add(1.0);
-                doubleCollection.Add(5.0);
+                doubleCollection.Add(0.5);
+                doubleCollection.Add(4.0);
 
                 var area = new Polygon();
                 area.Stroke = strokeBrush;
-                area.StrokeLineJoin = PenLineJoin.Miter;
-                area.StrokeDashCap = PenLineCap.Flat;
+                area.StrokeThickness = 0.5;
+                area.StrokeLineJoin = PenLineJoin.Round;
+                area.StrokeDashCap = PenLineCap.Square;
                 area.StrokeDashArray = doubleCollection;
                 area.Fill = fillBrush;
                 area.Points = areaPoints[i];

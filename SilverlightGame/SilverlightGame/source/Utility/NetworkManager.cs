@@ -11,9 +11,9 @@ using System.Windows.Shapes;
 using System.IO;
 using System.Json;
 using System.Diagnostics;
-using SilverlightGame.source.Utility;
+using SilverlightGame.Utility;
 
-namespace TestSilver.source.Utility
+namespace TestSilver.Utility
 {
     public class NetworkManager
     {

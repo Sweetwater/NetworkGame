@@ -44,13 +44,10 @@ namespace SilverlightGame.Graphics
             }
         }
 
-
         public MyImage(string url, BitmapImage bitmapImage)
         {
             this.ulr = url;
             this.bitmapImage = bitmapImage;
-
-
         }
     }
 }

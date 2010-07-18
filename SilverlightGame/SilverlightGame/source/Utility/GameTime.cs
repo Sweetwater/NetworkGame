@@ -29,9 +29,9 @@ namespace SilverlightGame.Utility
 
         public void Update()
         {
-            DateTime Now = DateTime.Now;
-            TimeSpan Elapsed = Now - last;
-            last = Now;
+            now = DateTime.Now;
+            TimeSpan Elapsed = now - last;
+            last = now;
 
             Delta = Elapsed.TotalSeconds;
         }

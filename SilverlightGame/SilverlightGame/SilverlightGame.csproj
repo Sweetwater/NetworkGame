@@ -68,6 +68,7 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="source\Data\PlayerInfo.cs" />
     <Compile Include="source\GameXXX.cs" />
     <Compile Include="source\Graphics\Graphic.cs" />
     <Compile Include="source\Graphics\MyImage.cs" />
@@ -77,12 +78,14 @@
     <Compile Include="source\Scene\BaseScene.cs" />
     <Compile Include="source\Scene\TitleScene.cs" />
     <Compile Include="source\Scene\LoadingScene.cs" />
+    <Compile Include="source\Scene\GameScene.cs" />
     <Compile Include="source\Utility\GameTime.cs" />
     <Compile Include="source\Utility\InputManager.cs" />
     <Compile Include="source\Utility\MyLog.cs" />
     <Compile Include="source\Utility\NetworkManager.cs" />
     <Compile Include="source\Utility\ResouceManager.cs" />
     <Compile Include="source\Utility\ResourceHelper.cs" />
+    <Compile Include="source\Utility\Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">

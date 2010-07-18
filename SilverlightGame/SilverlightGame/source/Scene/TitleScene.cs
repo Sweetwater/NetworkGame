@@ -11,7 +11,6 @@ using System.Windows.Shapes;
 using SilverlightGame.Utility;
 using SilverlightGame.Graphics;
 using System.Json;
-using SilverlightGame.source.Utility;
 using SilverlightGame.Object;
 
 namespace SilverlightGame.Scene

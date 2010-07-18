@@ -12,7 +12,6 @@ using SilverlightGame.Utility;
 using SilverlightGame.Graphics;
 using System.Runtime.Serialization.Json;
 using System.Json;
-using SilverlightGame.source.Utility;
 using SilverlightGame.Object;
 using System.Reflection.Emit;
 
@@ -74,6 +73,7 @@ namespace SilverlightGame.Scene
             {
                 if (reciveData["command"] == "entry")
                 {
+                    this.game.PlayerInfo.SetData(reciveData["playerInfo"]);
                     this.game.Map.Initialize(reciveData["matchInfo"]["mapSeed"]);
                     this.isLoadComplete = true;
                 }
@@ -84,13 +84,13 @@ namespace SilverlightGame.Scene
             {
                 if (isLoadComplete) {
                     Destroy();
+                    var gameScene = new GameScene(this.game);
+                    gameScene.Initialize();
                 }
             }
             else {
                 minLoadTime -= dt;
             }
-
-
         }
     }
 }

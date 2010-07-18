@@ -20,10 +20,10 @@ using SilverlightGame.Graphics;
 using System.Windows.Interop;
 using System.Collections;
 using System.Collections.Generic;
-using TestSilver.source.Utility;
-using SilverlightGame.source.Utility;
+using TestSilver.Utility;
 using SilverlightGame.Object;
 using SilverlightGame.source.Object;
+using SilverlightGame.Data;
 
 namespace SilverlightGame
 {
@@ -58,7 +58,7 @@ namespace SilverlightGame
         public CameraController CameraController { get; private set; }
 
         public Map Map { get; private set; }
-
+        public PlayerInfo PlayerInfo { get; private set; }
 
         public double SreenWidth {
             get { return Root.Width; }
@@ -93,6 +93,7 @@ namespace SilverlightGame
             this.Network = new NetworkManager();
             this.Camera = new Camera();
             this.Map = new Map(this);
+            this.PlayerInfo = new PlayerInfo();
         }
 
         public void Initialize() {

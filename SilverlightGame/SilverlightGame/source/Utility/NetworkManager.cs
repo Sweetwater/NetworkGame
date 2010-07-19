@@ -21,6 +21,7 @@ namespace TestSilver.Utility
         public event ReciveData reciveData;
 
         private bool isPolling;
+        private string pollingData;
 
         private bool isSendPost;
         private string postData;
@@ -37,8 +38,6 @@ namespace TestSilver.Utility
             MyLog.WriteLine("--------NetworkManager Initialize :" + address);
 
             this.address = address;
-
-            this.webClient.DownloadStringCompleted += _DownloadStringCompleted;
             this.webClient.UploadStringCompleted += _UploadStringCompleted;
 
             this.isPolling = false;
@@ -49,20 +48,20 @@ namespace TestSilver.Utility
         {
             StopPolling();
 
-            this.webClient.DownloadStringCompleted -= _DownloadStringCompleted;
             this.webClient.UploadStringCompleted -= _UploadStringCompleted;
 
             MyLog.WriteLine("--------NetworkManager Desotroy ");
         }
 
-        public void StartPolling()
+        public void StartPolling(string pollingData)
         {
             if (this.isPolling) return;
 
             MyLog.WriteLine("--------StartPolling");
 
+            this.pollingData = pollingData;
             this.isPolling = true;
-            SendGet();
+            SendPolling();
         }
 
         public void StopPolling()
@@ -97,47 +96,10 @@ namespace TestSilver.Utility
             webClient.UploadStringAsync(address, "POST", this.postData);
         }
 
-        private void SendGet()
+        private void SendPolling()
         {
             MyLog.WriteLine(1,"        SendGet");
-            webClient.DownloadStringAsync(address);
-        }
-
-        private void _DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
-        {
-            if (e == null) {
-                MyLog.WriteLine(2, "!!!! _DownloadStringCompleted arg is null !!!!");
-            }
-            else if (e.Error != null)
-            {
-                MyLog.WriteLineError("!!!! _DownloadStringCompleted error !!!!");
-                MyLog.WriteLineError("        " + e.Error.Message);
-            }
-            else
-            {
-                MyLog.WriteLine(2, "        _DownloadStringCompleted");
-                var result = e.Result;
-                JsonObject data = (JsonObject)JsonObject.Parse(result);
-
-                MyLog.WriteLine(2, "            result : " + result);
-                
-                foreach (string key in data.Keys)
-                {
-                    MyLog.WriteLine(2, "            key : " + key + " data : " + data[key].ToString());
-                }
-
-                if (reciveData != null)
-                {
-                    reciveData(data);
-                }
-            }
-
-            if (this.isSendPost) {
-                SendPost();
-            }
-            else if (this.isPolling) {
-                SendGet();
-            }
+            webClient.UploadStringAsync(address, "POST", this.pollingData);
         }
 
         private void _UploadStringCompleted(object sender, UploadStringCompletedEventArgs e)
@@ -175,7 +137,7 @@ namespace TestSilver.Utility
             }
             else if (this.isPolling)
             {
-                SendGet();
+                SendPolling();
             }
         }
     }

@@ -1,4 +1,4 @@
-﻿#define LOCAL_ABS
+﻿//#define LOCAL_ABS
 //#define SERVER_ABS
 
 using System;
@@ -58,7 +58,8 @@ namespace SilverlightGame
         public CameraController CameraController { get; private set; }
 
         public Map Map { get; private set; }
-        public PlayerInfo PlayerInfo { get; private set; }
+        public MatchInfo Match { get; private set; }
+        public PlayerInfo Player { get; private set; }
 
         public double SreenWidth {
             get { return Root.Width; }
@@ -93,7 +94,8 @@ namespace SilverlightGame
             this.Network = new NetworkManager();
             this.Camera = new Camera();
             this.Map = new Map(this);
-            this.PlayerInfo = new PlayerInfo();
+            this.Match = new MatchInfo();
+            this.Player = new PlayerInfo();
         }
 
         public void Initialize() {

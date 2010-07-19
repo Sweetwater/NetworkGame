@@ -21,5 +21,14 @@ namespace SilverlightGame.Utility
             var b = (byte)((color >> 0) & 0x000000FF);
             return Color.FromArgb(a, r, g, b);
         }
+
+        public static Color AddColor(Color color1, Color color2)
+        {
+            var a = (byte)Math.Min(((int)color1.A + (int)color2.A), 255);
+            var r = (byte)Math.Min(((int)color1.R + (int)color2.R), 255);
+            var g = (byte)Math.Min(((int)color1.G + (int)color2.G), 255);
+            var b = (byte)Math.Min(((int)color1.B + (int)color2.B), 255);
+            return Color.FromArgb(a, r, g, b);
+        }
     }
 }

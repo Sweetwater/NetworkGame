@@ -69,6 +69,7 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="source\Data\PlayerInfo.cs" />
+    <Compile Include="source\Data\MatchInfo.cs" />
     <Compile Include="source\GameXXX.cs" />
     <Compile Include="source\Graphics\Graphic.cs" />
     <Compile Include="source\Graphics\MyImage.cs" />

@@ -33,7 +33,7 @@ namespace SilverlightGame.Scene
         {
             this.game = game;
             this.loandingText = new TextBlock();
-            this.loandingText.Inlines.Add("Now Loaind...");
+            this.loandingText.Inlines.Add("Now Loading...");
             this.loandingText.FontSize = 40;
             this.loandingText.TextAlignment = TextAlignment.Center;
             var x = game.CenterX - loandingText.ActualWidth / 2;
@@ -73,8 +73,9 @@ namespace SilverlightGame.Scene
             {
                 if (reciveData["command"] == "entry")
                 {
-                    this.game.PlayerInfo.SetData(reciveData["playerInfo"]);
-                    this.game.Map.Initialize(reciveData["matchInfo"]["mapSeed"]);
+                    game.Match.SetData(reciveData["matchInfo"]);
+                    game.Player.SetData(reciveData["playerInfo"]);
+                    game.Map.Initialize(game.Match.MapSeed);
                     this.isLoadComplete = true;
                 }
                 reciveData = null;

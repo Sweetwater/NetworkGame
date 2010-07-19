@@ -40,6 +40,10 @@ namespace SilverlightGame.Object
         private Canvas mapCanvas;
         private Polygon[] areaShapes;
 
+        public Polygon GetAreaShape(int areaNumber) {
+            return this.areaShapes[areaNumber];
+        }
+
         public bool Visible {
             get { return (mapCanvas.Visibility == Visibility.Visible); }
             set { mapCanvas.Visibility = (value ? Visibility.Visible : Visibility.Collapsed); }
@@ -228,6 +232,7 @@ namespace SilverlightGame.Object
                 area.Tag = i;
                 area.MouseLeftButtonDown += AreaMouseButtonDown;
                 area.MouseLeftButtonUp += AreaMouseButtonUp;
+                this.areaShapes[i] = area;
                 this.mapCanvas.Children.Add(area);
             }
         }

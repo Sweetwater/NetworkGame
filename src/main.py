@@ -16,6 +16,16 @@ class PlayerData(db.Model):
     color = db.IntegerProperty();
     createTime = db.DateTimeProperty(auto_now=True)
  
+#エリアデータ
+class AreaData(db.Model):
+    number = db.IntegerProperty()
+    players = db.ListProperty(item_type=db.Key, default=[])
+    colors = db.ListProperty(item_type=int, default=[])
+
+#マップデータ
+class MapData(db.Model):
+    areaDatas = db.ListProperty(item_type=db.Key, default=[])
+ 
 #試合データ
 class MatchData(db.Model):
     id = db.IntegerProperty();
@@ -53,7 +63,9 @@ class CommandPage(webapp.RequestHandler):
         
     def post(self):
         commandTable = dict()
+        commandTable['polling'] = self.Polling
         commandTable['entry'] = self.Entry
+        commandTable['area_click'] = self.AreaClick
 
         data = simplejson.loads(self.request.get('data'))
         command = data['command']
@@ -113,15 +125,80 @@ class CommandPage(webapp.RequestHandler):
         playerInfo['color'] = playerData.color
 
         matchInfo = dict()
+        matchInfo['keyName'] = matchKeyName
         matchInfo['mapSeed'] = matchData.mapSeed
 
         message = dict()
         message['command'] = 'entry'
-        message['playerInfo'] = playerInfo
         message['matchInfo'] = matchInfo
+        message['playerInfo'] = playerInfo
 
         return message
 
+    def Polling(self, data):
+        matchKeyName = data['matchKeyName']
+        mapKeyName = matchKeyName + "_map"
+        mapData = MapData.get_or_insert(mapKeyName)
+
+        message = dict()
+        message['command'] = 'areaData'
+        message['areaDatas'] = self.GetAreaList(mapData.areaDatas)
+
+        return message
+
+    def AreaClick(self, data):
+        matchKeyName = data['matchKeyName']
+        playerKeyName = data['playerKeyName']     
+        mapKeyName = matchKeyName + "_map"
+        areaKeyName = matchKeyName + "_area_" + str(data['areaNumber'])
+
+        areaNumber = int(data['areaNumber'])
+
+        playerData = PlayerData.get_by_key_name(playerKeyName)
+        mapData = MapData.get_or_insert(mapKeyName)
+        areaData = AreaData.get_or_insert(key_name=areaKeyName, number=areaNumber)
+
+        try:
+            mapData.areaDatas.index(areaData.key())
+        except ValueError:
+            mapData.areaDatas.append(areaData.key())
+            mapData.put();
+
+        try:        
+            areaData.players.index(playerData.key())
+        except ValueError:
+            areaData.players.append(playerData.key())
+            areaData.colors.append(playerData.color)
+            areaData.put();
+
+            logging.log(25, 'click area   :'  + areaKeyName)
+            logging.log(25, '      player :'  + playerKeyName)
+            logging.log(25, '      color  :'  + str(playerData.color))
+
+        message = dict()
+        message['command'] = 'areaData'
+        message['areaDatas'] = self.GetAreaList(mapData.areaDatas)
+
+        return message
+
+    def GetAreaList(self, areaDatas):
+        areaList = []
+        for areaKey in areaDatas:
+            area = AreaData.get(areaKey)
+
+            players = []
+            for playerKey in area.players:
+                player = PlayerData.get(playerKey)
+                players.append(player.key().name())
+
+            data = dict()
+            data['number'] = area.number
+            data['playres'] = players
+            data['colors'] = area.colors
+            areaList.append(data)
+        
+        return areaList
+            
 
 application = webapp.WSGIApplication([('/', MainPage),
                                       ('/command', CommandPage),

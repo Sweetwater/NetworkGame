@@ -179,28 +179,28 @@ namespace SilverlightGame.Object
             int[] turnLefts = { down, up, left, right };
             int[] turnRights = { up, down, right, left };
 
-            IntPoint[] points = {
-                new IntPoint(0,1),
-                new IntPoint(1,0),
-                new IntPoint(0,0),
-                new IntPoint(1,1),
+            Point<int>[] points = {
+                new Point<int>(0,1),
+                new Point<int>(1,0),
+                new Point<int>(0,0),
+                new Point<int>(1,1),
             };
-            IntPoint[] hands = {
-                new IntPoint(0,1),
-                new IntPoint(0,-1),
-                new IntPoint(-1,0),
-                new IntPoint(1,0),
+            Point<int>[] hands = {
+                new Point<int>(0,1),
+                new Point<int>(0,-1),
+                new Point<int>(-1,0),
+                new Point<int>(1,0),
             };
-            IntPoint[] forwards = {
-                new IntPoint(-1,0),
-                new IntPoint(1,0),
-                new IntPoint(0,-1),
-                new IntPoint(0,1),
+            Point<int>[] forwards = {
+                new Point<int>(-1,0),
+                new Point<int>(1,0),
+                new Point<int>(0,-1),
+                new Point<int>(0,1),
             };
 
             var area = map.GetAreaID(x,y);
             var dir = right;
-            var pos = new IntPoint(x, y);
+            var pos = new Point<int>(x, y);
             var start = pos;
 
             var collection = new PointCollection();

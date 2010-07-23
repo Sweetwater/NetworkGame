@@ -31,7 +31,7 @@ namespace SilverlightGame.Object
         {
             return gridDatas[y][x];
         }
-        public int GetAreaID(IntPoint position)
+        public int GetAreaID(Point<int> position)
         {
             return gridDatas[position.Y][position.X];
         }

@@ -44,15 +44,14 @@ namespace SilverlightGame.Scene
 
         public void Initialize()
         {
-            this.game.Root.Children.Add(this.loandingText);
             this.elapsedTime = minLoadTime;
 
-            var json = new JsonObject();
-            json["command"] = "entry";
-            var send = "data=" + json.ToString();
+            this.game.Root.Children.Add(this.loandingText);
+
+            game.update += this.Update;
 
             game.Network.reciveData += ReciveData;
-            game.Network.SetSendPostRequest(send);
+            game.NetworkController.PostEntry();
 
             this.isLoadComplete = false;
         }
@@ -60,6 +59,8 @@ namespace SilverlightGame.Scene
         public void Destroy()
         {
             game.Network.reciveData -= ReciveData;
+            game.update -= this.Update;
+
             this.game.Root.Children.Remove(this.loandingText);
         }
 
@@ -73,25 +74,30 @@ namespace SilverlightGame.Scene
             {
                 if (reciveData["command"] == "entry")
                 {
-                    game.Match.SetData(reciveData["matchInfo"]);
-                    game.Player.SetData(reciveData["playerInfo"]);
-                    game.Map.Initialize(game.Match.MapSeed);
+                    SetEntryData(reciveData);
                     this.isLoadComplete = true;
                 }
                 reciveData = null;
             }
 
-            if (minLoadTime < 0)
+            if (minLoadTime > 0)
             {
-                if (isLoadComplete) {
-                    Destroy();
-                    var gameScene = new GameScene(this.game);
-                    gameScene.Initialize();
-                }
-            }
-            else {
                 minLoadTime -= dt;
             }
+            else if (isLoadComplete)
+            {
+                Destroy();
+                var gameScene = new GameScene(this.game);
+                gameScene.Initialize();
+            }
+        }
+
+        private void SetEntryData(JsonObject data)
+        {
+            game.Match.SetData(data["matchInfo"]);
+            game.Player.SetData(data["playerInfo"]);
+            game.Map.Initialize(game.Match.MapSeed);
+            game.MapDrawer.Initialize(game.Map, game.Match.MapSeed);
         }
     }
 }

@@ -50,6 +50,9 @@ namespace SilverlightGame.Utility
             Console.WriteLine(text);
             Debug.WriteLine(text);
             LogTextBlock.Text += text + "\n";
+
+            var window = System.Windows.Browser.HtmlPage.Window;
+            window.Eval("console.log('" + text + "');");
         }
 
         public static void WriteTextBlock(string text)

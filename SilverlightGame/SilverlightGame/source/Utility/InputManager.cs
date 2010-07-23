@@ -214,6 +214,7 @@ namespace SilverlightGame.Utility
         private void LostFocus(object sender, RoutedEventArgs e)
         {
             Clear();
+            MyLog.WriteLine("FocusLost");
         }
     }
 }

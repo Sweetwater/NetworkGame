@@ -9,19 +9,18 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using SilverlightGame.Utility;
-using SilverlightGame.Object;
 
-namespace SilverlightGame.source.Object
+namespace SilverlightGame.Object
 {
     public class CameraController
     {
         private Camera camera;
         private InputManager input;
 
+        public double movableRange = 3.0;
         public Point MinLimit;
-        public Point MaxLimit;    
+        public Point MaxLimit;
 
-        
         public CameraController(Camera camera, InputManager input)
         {
             this.camera = camera;
@@ -34,14 +33,18 @@ namespace SilverlightGame.source.Object
             {
                 var move = input.MouseMove();
                 var pos = camera.Position;
+                var moveLength = Math.Sqrt(move.X * move.X + move.Y * move.Y);
 
-                pos.X -= move.X;
-                pos.Y -= move.Y;
-                pos.X = Math.Max(pos.X, MinLimit.X);
-                pos.X = Math.Min(pos.X, MaxLimit.X);
-                pos.Y = Math.Max(pos.Y, MinLimit.Y);
-                pos.Y = Math.Min(pos.Y, MaxLimit.Y);
-                camera.Position = pos;
+                if (moveLength > movableRange)
+                {
+                    pos.X -= move.X;
+                    pos.Y -= move.Y;
+                    pos.X = Math.Max(pos.X, MinLimit.X);
+                    pos.X = Math.Min(pos.X, MaxLimit.X);
+                    pos.Y = Math.Max(pos.Y, MinLimit.Y);
+                    pos.Y = Math.Min(pos.Y, MaxLimit.Y);
+                    camera.Position = pos;
+                }
             }
 
             var wheelRate = 0.002;

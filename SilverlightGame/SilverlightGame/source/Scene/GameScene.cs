@@ -14,7 +14,8 @@ using System.Runtime.Serialization.Json;
 using System.Json;
 using SilverlightGame.Object;
 using System.Reflection.Emit;
-using TestSilver.Utility;
+using TestSilver.Network;
+using SilverlightGame.Network;
 
 namespace SilverlightGame.Scene
 {
@@ -22,40 +23,44 @@ namespace SilverlightGame.Scene
     {
         private GameXXX game;
         private Map map;
+        private MapDrawer mapDrawer;
+        private MapClickController mapClickController;
         private NetworkManager network;
+        private NetworkController networkController;
 
         private JsonObject reciveData;
 
         public GameScene(GameXXX game)
         {
             this.game = game;
+            this.mapClickController = new MapClickController();
         }
 
         public void Initialize()
         {
             this.map = this.game.Map;
+            this.mapDrawer = this.game.MapDrawer;
             this.network = this.game.Network;
+            this.networkController = this.game.NetworkController;
 
-            var data = new JsonObject();
-            data["command"] = "polling";
-            data["matchKeyName"] = game.Match.KeyName;
-            var pollingData = "data=" + data.ToString();
+            mapClickController.Initialize(game.Input, mapDrawer);
+
             network.reciveData += ReciveData;
-            network.StartPolling(pollingData);
+            networkController.StartPolling();
 
-            map.Visible = true;
-            game.update += map.Update;
             game.update += Update;
+            mapDrawer.Visible = true;
         }
 
         public void Destroy()
         {
-            network.StopPolling();
+            mapDrawer.Visible = false;
+            game.update -= Update;
+            
+            networkController.StopPolling();
             network.reciveData -= ReciveData;
 
-            game.update -= Update;
-            game.update -= map.Update;
-            game.Map.Visible = false;
+            mapClickController.Destroy();
         }
 
         public void ReciveData(JsonObject reciveData)
@@ -68,39 +73,44 @@ namespace SilverlightGame.Scene
 
         private void UpdateMap(JsonValue areaDatas)
         {
-            for (int i = 0; i < areaDatas.Count; i++)
-            {
-                var data = areaDatas[i];
-                var number = (int)data["number"];
-                var colors = data["colors"];
-                var color = Utils.ToColor(0);
-                for (int j = 0; j < colors.Count; j++)
-                {
-                    var color2 = Utils.ToColor((uint)colors[j]);
-                    color = Utils.AddColor(color, color2);
-                }
-                var brush = new SolidColorBrush(color);
-                map.GetAreaShape(number).Fill = brush;
-            }
+            //for (int i = 0; i < areaDatas.Count; i++)
+            //{
+            //    var data = areaDatas[i];
+            //    var number = (int)data["number"];
+            //    var colors = data["colors"];
+            //    var color = Utils.ToColor(0);
+            //    for (int j = 0; j < colors.Count; j++)
+            //    {
+            //        var color2 = Utils.ToColor((uint)colors[j]);
+            //        color = Utils.AddColor(color, color2);
+            //    }
+            //    var brush = new SolidColorBrush(color);
+            //    mapDrawer.GetAreaShape(number).Fill = brush;
+            //}
         }
 
         public void Update(double dt) {
-            var clickArea = map.ClickArea;
-            if (clickArea != null) {
-                var color = Utils.ToColor(game.Player.Color);
-                var brush = new SolidColorBrush(color);
-                clickArea.Fill = brush;
+            mapClickController.Update(dt);
 
-                var json = new JsonObject();
-                json["command"] = "area_click";
-                json["matchKeyName"] = game.Match.KeyName;
-                json["playerKeyName"] = game.Player.KeyName;
-                json["areaNumber"] = (int)clickArea.Tag;
-
-                var send = "data=" + json.ToString();
-                this.game.Network.SetSendPostRequest(send);
+            var areaID = mapClickController.ClickAreaID;
+            if (areaID != Map.EmptyArea)
+            {
+                networkController.PostClickArea(areaID);
             }
-        }
 
+            // TODO エリア塗り処理
+            //　クライアントでの塗りと
+            //　ネットワークからの塗りを統合する
+            // マップクラスにやらせる？
+            // エリアデータは誰が持つ？
+            //　マップにチェンジドイベントで
+            //　ドロワで受け取る？
+
+            //if (clickArea != null) {
+            //    var color = Utils.ToColor(game.Player.Color);
+            //    var brush = new SolidColorBrush(color);
+            //    clickArea.Fill = brush;
+            //}
+        }
     }
 }

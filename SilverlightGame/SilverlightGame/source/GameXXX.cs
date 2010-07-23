@@ -1,4 +1,4 @@
-﻿//#define LOCAL_ABS
+﻿#define LOCAL_ABS
 //#define SERVER_ABS
 
 using System;
@@ -20,10 +20,10 @@ using SilverlightGame.Graphics;
 using System.Windows.Interop;
 using System.Collections;
 using System.Collections.Generic;
-using TestSilver.Utility;
+using TestSilver.Network;
 using SilverlightGame.Object;
-using SilverlightGame.source.Object;
 using SilverlightGame.Data;
+using SilverlightGame.Network;
 
 namespace SilverlightGame
 {
@@ -39,10 +39,13 @@ namespace SilverlightGame
 #endif
 
         public delegate void Update(double dt);
-        public event Update update;
-
         public delegate void Draw(double dt);
+        public delegate void Resume();
+        public delegate void Suspend();
+        public event Update update;
         public event Draw draw;
+        public event Resume resume;
+        public event Suspend suspend;
 
         public Canvas Root { get; private set; }
 
@@ -50,6 +53,7 @@ namespace SilverlightGame
 
         public InputManager Input { get; private set; }
         public NetworkManager Network { get; private set; }
+        public NetworkController NetworkController { get; private set; }
         
         public Graphic Graphic { get; private set; }
         public Random SyncRandom { get; private set; }
@@ -58,6 +62,7 @@ namespace SilverlightGame
         public CameraController CameraController { get; private set; }
 
         public Map Map { get; private set; }
+        public MapDrawer MapDrawer { get; private set; }
         public MatchInfo Match { get; private set; }
         public PlayerInfo Player { get; private set; }
 
@@ -84,7 +89,7 @@ namespace SilverlightGame
             get { return Root.Height / 2d; }
         }
 
-        protected DateTime lastTick;
+        private TimeSpan gameTimeLimit = new TimeSpan(0, 5, 0);
 
         public GameXXX(Canvas root)
         {
@@ -92,14 +97,16 @@ namespace SilverlightGame
             this.Time = new GameTime();
             this.Input = new InputManager();
             this.Network = new NetworkManager();
+            this.NetworkController = new NetworkController(this, Network);
             this.Camera = new Camera();
             this.Map = new Map(this);
+            this.MapDrawer = new MapDrawer(this);
             this.Match = new MatchInfo();
             this.Player = new PlayerInfo();
         }
 
         public void Initialize() {
-            MyLog.WriteLine("GameXXX Initialize");
+            MyLog.WriteLine("--GameXXX Initialize -------- begin");
             SetInitialParam();
 
             Time.Initialize();
@@ -108,42 +115,61 @@ namespace SilverlightGame
 
             this.CameraController = new CameraController(Camera, Input);
 
+            this.update += Network.Update;
             this.update += Input.Update;
             this.update += CameraController.Update;
 
+            this.suspend += Network.Suspend;
+            this.resume += Network.Resume;
+
             CompositionTarget.Rendering += CompositionTarget_Rendering;
+            Root.LostFocus += LostFocus;
+            Root.GotFocus += GotFocus;
 
             Reset();
+            MyLog.WriteLine("--GameXXX Initialize -------- end");
         }
 
         public void Destroy()
         {
-            MyLog.WriteLine("GameXXX Destroy");
+            MyLog.WriteLine("--GameXXX Destroy -------- begin");
             
+            Root.GotFocus += GotFocus;
+            Root.LostFocus += LostFocus;
             CompositionTarget.Rendering -= CompositionTarget_Rendering;
+
+            this.resume += Network.Resume;
+            this.suspend += Network.Suspend;
 
             this.update -= CameraController.Update;
             this.update -= Input.Update;
+            this.update -= Network.Update;
 
             this.Input.Destroy();
             this.Network.Destroy();
+            this.MapDrawer.Destroy();
+            this.Map.Destroy();
 
-            MyLog.WriteLine("GameXXX Destroy End");
+            MyLog.WriteLine("--GameXXX Destroy -------- end");
         }
 
         private void SetInitialParam()
         {
+            MyLog.WriteLine("--GameXXX SetInitialParam -------- being");
             var initParame = Application.Current.Host.InitParams;
             foreach (string key in initParame.Keys)
             {
                 Debug.WriteLine("initParam : " + key + " : " + initParame[key]);
             }
+            MyLog.WriteLine("--GameXXX SetInitialParam -------- end");
         }
 
 
         public void Reset()
         {
-            MyLog.WriteLine("GameXXX Reset");
+            MyLog.WriteLine("--GameXXX Reset -------- begin");
+            MyLog.WriteLine("TimeLimit :" + gameTimeLimit);
+            Time.Reset();
 
             Camera.Origin = new Point(HalfWidth, HalfHeight);
             Camera.Position = new Point(0, 0);
@@ -152,23 +178,37 @@ namespace SilverlightGame
 
             var loadingScene = new LoadingScene(this);
             loadingScene.Initialize();
-            this.update += loadingScene.Update;
+
+            MyLog.WriteLine("--GameXXX Reset -------- end");
         }
 
         public void CompositionTarget_Rendering(object sender, EventArgs e)
         {
             EnterFrame();
         }
+        public void LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (this.suspend != null) suspend();
+        }
+        public void GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (this.resume != null) resume();
+        }
 
         public void EnterFrame()
         {
             if (Input.isDown(Key.Escape))
             {
-                MyLog.WriteLine("GameXXX ESC");
+                MyLog.WriteLine("!!!! GameXXX ESC !!!!");
                 Destroy();
             }
 
             Time.Update();
+            if (Time.TotalElapsed > gameTimeLimit)
+            {
+                MyLog.WriteLine("!!!! GameXXX time limit over !!!!");
+                Destroy();
+            }
 
             if (update != null) update(Time.Delta);
             if (draw != null) draw(Time.Delta);

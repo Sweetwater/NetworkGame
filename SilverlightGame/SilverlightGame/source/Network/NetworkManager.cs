@@ -12,132 +12,154 @@ using System.IO;
 using System.Json;
 using System.Diagnostics;
 using SilverlightGame.Utility;
+using System.Collections.Generic;
 
-namespace TestSilver.Utility
+namespace TestSilver.Network
 {
     public class NetworkManager
     {
         public delegate void ReciveData(JsonObject data);
         public event ReciveData reciveData;
 
+        private bool isSuspend;
+
+        private double intervalTime = 1.0;
+        private double intervalTimer;
+
         private bool isPolling;
         private string pollingData;
-
-        private bool isSendPost;
-        private string postData;
         
+        private Queue<string> postDatas;
+
         private WebClient webClient;
         private Uri address;
 
         public NetworkManager()
         {
+            this.isSuspend = false;
             this.webClient = new WebClient();
+            this.postDatas = new Queue<string>();
         }
 
         public void Initialize(Uri address) {
             MyLog.WriteLine("--------NetworkManager Initialize :" + address);
+            MyLog.WriteLine("    interval :" + intervalTime);
+
+
+            this.intervalTimer = 0;
 
             this.address = address;
-            this.webClient.UploadStringCompleted += _UploadStringCompleted;
-
-            this.isPolling = false;
-            this.isSendPost = false;
+            this.webClient.UploadStringCompleted += UploadStringCompleted;
         }
 
         public void Destroy()
         {
             StopPolling();
 
-            this.webClient.UploadStringCompleted -= _UploadStringCompleted;
-
+            this.webClient.UploadStringCompleted -= UploadStringCompleted;
             MyLog.WriteLine("--------NetworkManager Desotroy ");
         }
 
+        public void Suspend()
+        {
+            this.isSuspend = true;
+            MyLog.WriteLine("--------NetworkManager Suspend ");
+        }
+
+        public void Resume()
+        {
+            this.isSuspend = false;
+            MyLog.WriteLine("--------NetworkManager Resume ");
+        }
+
+        public void Update(double dt)
+        {
+            if (intervalTime > 0)
+            {
+                this.intervalTimer -= dt;
+            }
+
+            if (isSuspend) return;
+
+            var isPostRequest = (postDatas.Count != 0);
+            var isSendRequest = (isPolling || isPostRequest);
+            var isNotBusy = (webClient.IsBusy == false);
+
+            if (isSendRequest && isNotBusy && intervalTimer <= 0)
+            {
+                if (isPostRequest)
+                {
+                    SendPost(postDatas.Dequeue());
+                }
+                else if (isPolling)
+                {
+                    SendPolling();
+                }
+                this.intervalTimer = intervalTime;
+            }
+        }
+
+
         public void StartPolling(string pollingData)
         {
-            if (this.isPolling) return;
-
             MyLog.WriteLine("--------StartPolling");
 
             this.pollingData = pollingData;
             this.isPolling = true;
-            SendPolling();
         }
 
         public void StopPolling()
         {
-            if (this.isPolling == false) return;
-
-            MyLog.WriteLine("--------StopPolling");
-
-
             this.isPolling = false;
+            MyLog.WriteLine("--------StopPolling");
         }
 
-        public void SetSendPostRequest(string data)
+        public void SendPostRequest(string data)
         {
-            MyLog.WriteLine(5,"        SetSendPostRequest :" + data);
-            this.postData = data;
-
-            if (this.webClient.IsBusy)
-            {
-                this.isSendPost = true;
-            }
-            else
-            {
-                SendPost();
-            }
+            MyLog.WriteLine(5,"    SetSendPostRequest :" + data);
+            this.postDatas.Enqueue(data);
         }
 
-        private void SendPost()
+        private void SendPost(string data)
         {
-            MyLog.WriteLine(5,"        SendPost :" + this.postData);
-            this.isSendPost = false;
-            webClient.UploadStringAsync(address, "POST", this.postData);
+            MyLog.WriteLine(5,"    SendPost :" + data);
+            webClient.UploadStringAsync(address, "POST", data);
         }
 
         private void SendPolling()
         {
-            MyLog.WriteLine(1,"        SendGet");
-            webClient.UploadStringAsync(address, "POST", this.pollingData);
+            MyLog.WriteLine(1,"    SendGet");
+            webClient.UploadStringAsync(address, "POST", pollingData);
         }
 
-        private void _UploadStringCompleted(object sender, UploadStringCompletedEventArgs e)
+        private void UploadStringCompleted(object sender, UploadStringCompletedEventArgs e)
         {
             if (e == null)
             {
-                MyLog.WriteLine(4, "!!!! _UploadStringCompleted arg is null !!!!");
+                MyLog.WriteLine(4, "!!!! UploadStringCompleted arg is null !!!!");
             }
             else if (e.Error != null)
             {
-                MyLog.WriteLineError("!!!! _UploadStringCompleted error !!!!");
+                MyLog.WriteLineError("!!!! UploadStringCompleted error !!!!");
                 MyLog.WriteLineError("        " + e.Error.Message);
             }
             else
             {
-                MyLog.WriteLine(4, "        _UploadStringCompleted");
+                MyLog.WriteLine(4, "    UploadStringCompleted");
+                
                 var result = e.Result;
                 JsonObject data = (JsonObject)JsonObject.Parse(result);
 
-                MyLog.WriteLine(4, "            result : " + result);
+                MyLog.WriteLine(4, "    result : " + result);
                 foreach (string key in data.Keys)
                 {
-                    MyLog.WriteLine(4, "            key : " + key + " data : " + data[key].ToString());
+                    MyLog.WriteLine(4, "    key : " + key + " data : " + data[key].ToString());
                 }
 
                 if (reciveData != null)
                 {
                     reciveData(data);
                 }
-            }
-
-            if (this.isSendPost)
-            {
-                SendPost();
-            }
-            else if (this.isPolling)
-            {
-                SendPolling();
             }
         }
     }

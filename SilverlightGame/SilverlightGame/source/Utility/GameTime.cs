@@ -13,27 +13,35 @@ namespace SilverlightGame.Utility
 {
     public class GameTime
     {
-        private DateTime last;
-        private DateTime now;
-        public TimeSpan Elapsed { get; private set; }
+        public DateTime StartTime{ get; private set; }
+        public TimeSpan TotalElapsed { get; private set; }
+        public TimeSpan FrameElapsed { get; private set; }
         public double Delta { get; private set; }
+
+        private DateTime lastFrame;
+        private DateTime nowFrame;
 
         public GameTime ()
 	    {
 	    }
-
         public void Initialize()
         {
-            last = DateTime.Now;
+            Reset();
+        }
+        public void Reset()
+        {
+            StartTime = DateTime.Now;
+            lastFrame = StartTime;
         }
 
         public void Update()
         {
-            now = DateTime.Now;
-            TimeSpan Elapsed = now - last;
-            last = now;
+            nowFrame = DateTime.Now;
+            TotalElapsed = nowFrame - StartTime;
+            FrameElapsed = nowFrame - lastFrame;
+            lastFrame = nowFrame;
 
-            Delta = Elapsed.TotalSeconds;
+            Delta = FrameElapsed.TotalSeconds;
         }
     }
 }

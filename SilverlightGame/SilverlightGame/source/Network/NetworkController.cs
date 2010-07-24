@@ -50,9 +50,9 @@ namespace SilverlightGame.Network
         {
             var json = new JsonObject();
             json["command"] = "area_click";
+            json["areaID"] = areaNumber;
             json["matchKeyName"] = game.Match.KeyName;
             json["playerKeyName"] = game.Player.KeyName;
-            json["areaNumber"] = areaNumber;
             var send = "data=" + json.ToString();
             network.SendPostRequest(send);
         }

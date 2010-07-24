@@ -16,6 +16,7 @@ using SilverlightGame.Object;
 using System.Reflection.Emit;
 using TestSilver.Network;
 using SilverlightGame.Network;
+using SilverlightGame.Data;
 
 namespace SilverlightGame.Scene
 {
@@ -43,7 +44,7 @@ namespace SilverlightGame.Scene
             this.network = this.game.Network;
             this.networkController = this.game.NetworkController;
 
-            mapClickController.Initialize(game.Input, mapDrawer);
+            mapClickController.Initialize(game.Input, map);
 
             network.reciveData += ReciveData;
             networkController.StartPolling();
@@ -73,20 +74,17 @@ namespace SilverlightGame.Scene
 
         private void UpdateMap(JsonValue areaDatas)
         {
-            //for (int i = 0; i < areaDatas.Count; i++)
-            //{
-            //    var data = areaDatas[i];
-            //    var number = (int)data["number"];
-            //    var colors = data["colors"];
-            //    var color = Utils.ToColor(0);
-            //    for (int j = 0; j < colors.Count; j++)
-            //    {
-            //        var color2 = Utils.ToColor((uint)colors[j]);
-            //        color = Utils.AddColor(color, color2);
-            //    }
-            //    var brush = new SolidColorBrush(color);
-            //    mapDrawer.GetAreaShape(number).Fill = brush;
-            //}
+            for (int i = 0; i < areaDatas.Count; i++)
+            {
+                var data = areaDatas[i];
+                var areaID = (int)data["areaID"];
+                var info = map.GetAreaInfo(areaID);
+                var isChanged = info.SetData(data);
+                if (isChanged)
+                {
+                    SetAreaColor(info);
+                }
+            }
         }
 
         public void Update(double dt) {
@@ -95,22 +93,36 @@ namespace SilverlightGame.Scene
             var areaID = mapClickController.ClickAreaID;
             if (areaID != Map.EmptyArea)
             {
-                networkController.PostClickArea(areaID);
+            	var myPlayer = game.Player.KeyName;
+                var myColor = game.Player.Color;
+                var info = map.GetAreaInfo(areaID);
+                var isChanged = info.SetData(myPlayer, myColor);
+                if (isChanged)
+                {
+                	networkController.PostClickArea(areaID);
+                	SetAreaColor(info);
+                }
             }
+        }
+        
+        private void SetAreaColor(AreaInfo info)
+        {
+        	var conflictColor = 255;
+        	var maxPlayer = game.Match.MaxPlayer;
 
-            // TODO エリア塗り処理
-            //　クライアントでの塗りと
-            //　ネットワークからの塗りを統合する
-            // マップクラスにやらせる？
-            // エリアデータは誰が持つ？
-            //　マップにチェンジドイベントで
-            //　ドロワで受け取る？
-
-            //if (clickArea != null) {
-            //    var color = Utils.ToColor(game.Player.Color);
-            //    var brush = new SolidColorBrush(color);
-            //    clickArea.Fill = brush;
-            //}
+        	Color fillColor;
+        	var colorCount = info.Colors.Count;
+        	if (colorCount == 1) {
+        		fillColor = Utils.ToColor(info.FirstColor);
+        	}
+        	else {
+                var rate = 1.0 - ((double)colorCount / maxPlayer);
+                var rgb = (byte)(conflictColor * rate);
+        		fillColor = Color.FromArgb(255, rgb, rgb, rgb);
+        	}
+        	
+        	var fillBrsuh = new SolidColorBrush(fillColor);
+        	info.Shape.Fill = fillBrsuh;
         }
     }
 }

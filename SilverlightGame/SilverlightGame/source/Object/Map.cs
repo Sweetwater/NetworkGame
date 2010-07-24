@@ -10,6 +10,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using System.Collections.Generic;
 using SilverlightGame.Utility;
+using SilverlightGame.Data;
 
 namespace SilverlightGame.Object
 {
@@ -36,6 +37,10 @@ namespace SilverlightGame.Object
             return gridDatas[position.Y][position.X];
         }
 
+		public AreaInfo GetAreaInfo(int areaID)
+		{
+			return areaInfos[areaID];
+		}
 
         private int verticalMin = 2;
         private int verticalMax = 10;
@@ -49,6 +54,7 @@ namespace SilverlightGame.Object
         private GameXXX game;
         private Random random;
         private int[][] gridDatas;
+        private AreaInfo[] areaInfos;
 
         public Map(GameXXX game)
         {
@@ -65,6 +71,7 @@ namespace SilverlightGame.Object
         public void Initialize(int seed)
         {
             CreateGridData(seed);
+            CreateAreaInfo();
         }
 
         public void Destroy()
@@ -164,6 +171,15 @@ namespace SilverlightGame.Object
                 }
             }
             return EmptyArea;
+        }
+
+        private void CreateAreaInfo()
+        {
+        	this.areaInfos = new AreaInfo[AreaNum];
+        	for (int i = 0; i < areaInfos.Length; i++)
+        	{
+        		this.areaInfos[i] = new AreaInfo(i);
+        	}
         }
     }
 }

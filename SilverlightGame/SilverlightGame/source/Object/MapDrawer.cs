@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using SilverlightGame.Utility;
+using SilverlightGame.Data;
 
 namespace SilverlightGame.Object
 {
@@ -28,8 +29,8 @@ namespace SilverlightGame.Object
         }
 
         private Polygon[] areaShapes;
-        public Polygon[] AreaShapes {
-            get { return areaShapes; }
+        public Polygon GetAreaShape(int arearID) {
+            return areaShapes[arearID];
         }
 
         private Point[][] mapGridPoints;
@@ -55,6 +56,16 @@ namespace SilverlightGame.Object
             this.map = map;
             this.random = new Random(mapSeed);
             CreateShape();
+            SetAreaInfoShape();
+        }
+
+        private void SetAreaInfoShape()
+        {
+            for (int i = 0; i < map.AreaNum; i++)
+            {
+                var info = map.GetAreaInfo(i);
+                info.Shape = areaShapes[i];
+            }
         }
 
         public void Destroy()

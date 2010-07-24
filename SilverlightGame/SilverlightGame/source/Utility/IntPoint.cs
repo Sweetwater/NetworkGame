@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 
+#if false
 namespace SilverlightGame.Utility
 {
     public struct IntPoint
@@ -68,3 +69,4 @@ namespace SilverlightGame.Utility
         }
     }
 }
+#endif

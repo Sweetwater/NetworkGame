@@ -10,6 +10,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using SilverlightGame.Utility;
 using SilverlightGame.Object;
+using SilverlightGame.Data;
 using TestSilver.Network;
 
 namespace SilverlightGame.Object
@@ -21,7 +22,7 @@ namespace SilverlightGame.Object
         public Point ClickPoint { get; private set; }
 
         private InputManager input;
-        private MapDrawer drawer;
+        private Map map;
 
         private double clickRange = 10.0;
         private Polygon downArea;
@@ -31,30 +32,30 @@ namespace SilverlightGame.Object
         {
         }
 
-        public void Initialize(InputManager inputManager, MapDrawer mapDrawer)
+        public void Initialize(InputManager inputManager, Map map)
         {
             this.input = inputManager;
-            this.drawer = mapDrawer;
+            this.map = map;
 
             ClickAreaID = Map.EmptyArea;
             ClickArea = null;
             this.downArea = null;
 
-            var areas = drawer.AreaShapes;
-            for (int i = 0; i < areas.Length; i++)
+            for (int i = 0; i < map.AreaNum; i++)
             {
-                areas[i].MouseLeftButtonUp += AreaMouseButtonUp;
-                areas[i].MouseLeftButtonDown += AreaMouseButtonDown;
+                var info = map.GetAreaInfo(i);
+                info.Shape.MouseLeftButtonUp += AreaMouseButtonUp;
+                info.Shape.MouseLeftButtonDown += AreaMouseButtonDown;
             }
         }
 
         public void Destroy()
         {
-            var areas = drawer.AreaShapes;
-            for (int i = 0; i < areas.Length; i++)
+            for (int i = 0; i < map.AreaNum; i++)
             {
-                areas[i].MouseLeftButtonUp -= AreaMouseButtonUp;
-                areas[i].MouseLeftButtonDown -= AreaMouseButtonDown;
+                var info = map.GetAreaInfo(i);
+                info.Shape.MouseLeftButtonUp -= AreaMouseButtonUp;
+                info.Shape.MouseLeftButtonDown -= AreaMouseButtonDown;
             }
         }
 

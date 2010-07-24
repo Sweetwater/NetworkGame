@@ -17,15 +17,18 @@ namespace SilverlightGame.Data
     {
         public string KeyName;
         public int MapSeed;
+        public int MaxPlayer;
 
         public void SetData(JsonValue data)
         {
             this.KeyName = data["keyName"];
+            this.MaxPlayer = 4;
             this.MapSeed = data["mapSeed"];
 
             MyLog.WriteLine("MatchInfo SetData");
-            MyLog.WriteLine("    KeyName : " + this.KeyName);
-            MyLog.WriteLine("    MapSeed : " + this.MapSeed);
+            MyLog.WriteLine("    KeyName   : " + this.KeyName);
+            MyLog.WriteLine("    MaxPlayer : " + this.MaxPlayer);
+            MyLog.WriteLine("    MapSeed   : " + this.MapSeed);
         }
     }
 }

@@ -18,7 +18,7 @@ class PlayerData(db.Model):
  
 #エリアデータ
 class AreaData(db.Model):
-    number = db.IntegerProperty()
+    id = db.IntegerProperty()
     players = db.ListProperty(item_type=db.Key, default=[])
     colors = db.ListProperty(item_type=int, default=[])
 
@@ -150,13 +150,13 @@ class CommandPage(webapp.RequestHandler):
         matchKeyName = data['matchKeyName']
         playerKeyName = data['playerKeyName']     
         mapKeyName = matchKeyName + "_map"
-        areaKeyName = matchKeyName + "_area_" + str(data['areaNumber'])
+        areaKeyName = matchKeyName + "_area_" + str(data['areaID'])
 
-        areaNumber = int(data['areaNumber'])
+        areaID = int(data['areaID'])
 
         playerData = PlayerData.get_by_key_name(playerKeyName)
         mapData = MapData.get_or_insert(mapKeyName)
-        areaData = AreaData.get_or_insert(key_name=areaKeyName, number=areaNumber)
+        areaData = AreaData.get_or_insert(key_name=areaKeyName, id=areaID)
 
         try:
             mapData.areaDatas.index(areaData.key())
@@ -192,8 +192,8 @@ class CommandPage(webapp.RequestHandler):
                 players.append(player.key().name())
 
             data = dict()
-            data['number'] = area.number
-            data['playres'] = players
+            data['areaID'] = area.id
+            data['players'] = players
             data['colors'] = area.colors
             areaList.append(data)
         
